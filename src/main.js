@@ -1,7 +1,7 @@
 import './styles.css';
 
 const models = [
-  { id: 'methusos', name: 'Methusos 5.1', provider: 'Chat Glu', detail: 'Custom reasoning and coding model', color: '#39ff88', modes: ['Chat', 'Code', 'Image', 'Study'], puterModel: 'gpt-4o-mini' },
+  { id: 'methusos', name: 'Methusos 5.2', provider: 'Chat Glu', detail: 'Custom reasoning, coding, and image model', color: '#a78bfa', modes: ['Chat', 'Code', 'Image', 'Study'], puterModel: 'gpt-4o-mini' },
   { id: 'deepseek', name: 'DeepSeek Chat', provider: 'DeepSeek', detail: 'Reasoning and coding', color: '#7ca8ff', modes: ['Chat', 'Code'], puterModel: 'deepseek-chat' },
   { id: 'claude', name: 'Claude Sonnet', provider: 'Anthropic', detail: 'Writing and analysis', color: '#e0a27d', modes: ['Chat', 'Code'], puterModel: 'claude-3-5-sonnet' },
   { id: 'gemini', name: 'Gemini Flash', provider: 'Google', detail: 'Fast multimodal model', color: '#91a9ff', modes: ['Chat', 'Image'], puterModel: 'gemini-2.0-flash' },
@@ -15,6 +15,17 @@ const starterChats = [
   { id: 'ideas', title: 'Creative ideas', updated: 'Yesterday', messages: [{ role: 'user', text: 'Give me three product ideas.' }, { role: 'assistant', text: 'Here are three directions worth exploring: a quiet daily planner, a collaborative research board, and a personal learning studio.' }] },
   { id: 'website', title: 'Building a website', updated: 'Aug 30', messages: [{ role: 'user', text: 'How should I plan a landing page?' }, { role: 'assistant', text: 'Start with one clear promise, then support it with proof, a simple workflow, and one focused call to action.' }] }
 ];
+
+const themes = {
+  midnight: { label: 'Midnight Obsidian', next: 'cyberpunk' },
+  cyberpunk: { label: 'Cyberpunk Neon', next: 'emerald' },
+  emerald: { label: 'Emerald Minimal', next: 'solarized' },
+  solarized: { label: 'Solarized Light', next: 'deep-space' },
+  'deep-space': { label: 'Deep Space Obsidian', next: 'cyber-matrix' },
+  'cyber-matrix': { label: 'Cyber Matrix', next: 'tokyo-nightstorm' },
+  'tokyo-nightstorm': { label: 'Tokyo Nightstorm', next: 'solarized-darkroom' },
+  'solarized-darkroom': { label: 'Solarized Darkroom', next: 'midnight' }
+};
 
 const icons = {
   plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
@@ -43,7 +54,7 @@ const state = {
   chats: saved('chat-glu-chats', starterChats),
   notebooks: saved('chat-glu-notebooks', [{ id: 'study-starter', title: 'AI study notes', body: 'Ask Methusos 5 to turn a topic into a lesson plan, flashcards, and a visual study guide.' }]),
   activeChatId: localStorage.getItem('chat-glu-active') || 'welcome',
-  modelId: localStorage.getItem('chat-glu-model') || 'methusos',
+  modelId: models.some((model) => model.id === localStorage.getItem('chat-glu-model')) ? localStorage.getItem('chat-glu-model') : 'methusos',
   mode: localStorage.getItem('chat-glu-mode') || 'Chat',
   theme: themes[localStorage.getItem('chat-glu-theme')] ? localStorage.getItem('chat-glu-theme') : 'midnight',
   credits: Number(localStorage.getItem('chat-glu-credits') || 900),
@@ -55,17 +66,6 @@ const state = {
   ,puterSignedIn: false,
   authenticated: localStorage.getItem('chat-glu-authenticated') === 'true',
   authMode: 'signin'
-};
-
-const themes = {
-  midnight: { label: 'Midnight Obsidian', next: 'cyberpunk' },
-  cyberpunk: { label: 'Cyberpunk Neon', next: 'emerald' },
-  emerald: { label: 'Emerald Minimal', next: 'solarized' },
-  solarized: { label: 'Solarized Light', next: 'deep-space' },
-  'deep-space': { label: 'Deep Space Obsidian', next: 'cyber-matrix' },
-  'cyber-matrix': { label: 'Cyber Matrix', next: 'tokyo-nightstorm' },
-  'tokyo-nightstorm': { label: 'Tokyo Nightstorm', next: 'solarized-darkroom' },
-  'solarized-darkroom': { label: 'Solarized Darkroom', next: 'midnight' }
 };
 
 const promptTemplates = [
