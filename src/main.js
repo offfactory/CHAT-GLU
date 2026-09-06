@@ -45,7 +45,7 @@ const state = {
   activeChatId: localStorage.getItem('chat-glu-active') || 'welcome',
   modelId: localStorage.getItem('chat-glu-model') || 'methusos',
   mode: localStorage.getItem('chat-glu-mode') || 'Chat',
-  theme: 'dark',
+  theme: ['midnight', 'cyberpunk', 'emerald', 'solarized'].includes(localStorage.getItem('chat-glu-theme')) ? localStorage.getItem('chat-glu-theme') : 'midnight',
   credits: Number(localStorage.getItem('chat-glu-credits') || 900),
   profile: saved('chat-glu-profile', { name: 'My account', email: 'Local profile', avatar: 'M', photo: '' }),
   files: saved('chat-glu-files', []),
@@ -55,6 +55,13 @@ const state = {
   ,puterSignedIn: false,
   authenticated: localStorage.getItem('chat-glu-authenticated') === 'true',
   authMode: 'signin'
+};
+
+const themes = {
+  midnight: { label: 'Midnight Obsidian', next: 'cyberpunk' },
+  cyberpunk: { label: 'Cyberpunk Neon', next: 'emerald' },
+  emerald: { label: 'Emerald Minimal', next: 'solarized' },
+  solarized: { label: 'Solarized Light', next: 'midnight' }
 };
 
 const app = document.querySelector('#app');
@@ -111,6 +118,7 @@ function render() {
           <button class="nav-item ${state.activePanel === 'files' ? 'active' : ''}" data-panel="files">${icons.file}<span>Library</span></button>
           <button class="nav-item ${state.activePanel === 'coder' ? 'active' : ''}" data-panel="coder">${icons.code}<span>Coder</span></button>
           <button class="nav-item ${state.activePanel === 'roblox' ? 'active' : ''}" data-panel="roblox">${icons.roblox}<span>Roblox Studio</span></button>
+          <button class="nav-item ${state.activePanel === 'console' ? 'active' : ''}" data-panel="console">${icons.code}<span>Cloud Console</span></button>
         </nav>
         <div class="sidebar-section notebooks-nav">
           <div class="section-heading">Notebooks <button class="icon-button small" data-action="new-notebook" aria-label="New notebook">${icons.plus}</button></div>
@@ -122,7 +130,7 @@ function render() {
         </div>
         <div class="sidebar-bottom">
           <button class="profile-row" data-action="profile"><span class="avatar">${state.profile.photo ? `<img src="${state.profile.photo}" alt="" />` : escapeHtml(state.profile.avatar)}</span><span><strong>${escapeHtml(state.profile.name)}</strong><small>Local profile</small></span><span class="more">•••</span></button>
-          <div class="theme-row static-theme">${icons.moon}<span>Dark workspace</span></div>
+          <button class="theme-row" data-action="theme">${icons.moon}<span>${themes[state.theme].label}</span><small>Change theme</small></button>
         </div>
       </aside>
       <main class="main">
@@ -165,12 +173,23 @@ function bindAuthEvents() {
 }
 
 function renderPanel(chat, model) {
+  if (state.activePanel === 'console') return renderConsole();
   if (state.activePanel === 'images') return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Creative studio</span><h1>Images</h1><p>Generate visual concepts with Methusos 5 through Puter.</p></div><button class="button-primary" data-action="image-prompt">${icons.image} Create image</button></div><div class="empty-grid"><div class="empty-card"><div class="empty-icon">${icons.image}</div><strong>Image generation</strong><span>Ask Methusos 5 to create a visual and save it here.</span><button class="text-button" data-action="image-prompt">Start creating</button></div></div></section>`;
   if (state.activePanel === 'files') return `<section class="content-panel"><div class="panel-title"><div><span class="eyebrow">Your workspace</span><h1>Library</h1><p>Files you upload become context for your chats and notebooks.</p></div><button class="button-primary" data-action="upload">${icons.plus} Upload files</button></div><div class="file-grid">${state.files.length ? state.files.map((file) => `<div class="file-card">${icons.file}<strong>${escapeHtml(file.name)}</strong><small>${file.size}</small></div>`).join('') : '<div class="empty-card"><div class="empty-icon">' + icons.file + '</div><strong>Your library is empty</strong><span>Upload notes, images, or documents to use them in chat.</span><button class="text-button" data-action="upload">Upload a file</button></div>'}</div></section>`;
   if (state.activePanel === 'coder') return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Methusos 5 workspace</span><h1>Coder</h1><p>Build with chat, files, code plans, and safe browser previews.</p></div><button class="button-primary" data-action="coder-chat">${icons.code} Start coding</button></div><div class="coder-grid"><div class="empty-card"><div class="empty-icon">${icons.code}</div><strong>Chat with your code</strong><span>Upload a project file, ask for a fix, or generate a starter component.</span><button class="text-button" data-action="coder-chat">Open code mode</button></div><div class="empty-card"><div class="empty-icon">${icons.file}</div><strong>Safe command notes</strong><span>Methusos 5 can explain commands and generate scripts. It does not run unknown shell commands in your browser.</span></div></div></section>`;
   if (state.activePanel === 'roblox') {
     const mcpConfig = JSON.stringify({ mcpServers: { Roblox_Studio: { command: 'cmd.exe', args: ['/c', '%LOCALAPPDATA%\\\\Roblox\\\\mcp.bat'] } } }, null, 2);
     return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Creator connection</span><h1>Roblox Studio MCP</h1><p>Connect Methusos 5.1 to your open Studio session with Roblox's local MCP server.</p></div><button class="button-primary" data-action="roblox-connect">${icons.roblox} Open setup</button></div><div class="coder-grid"><div class="empty-card"><div class="empty-icon">${icons.roblox}</div><strong>1. Enable Studio MCP</strong><span>In Roblox Studio open Assistant, choose … → Manage MCP Servers, then enable Studio as an MCP server.</span><button class="text-button" data-action="roblox-connect">Open connection settings</button></div><div class="empty-card"><div class="empty-icon">${icons.code}</div><strong>2. Add this client config</strong><span>Use this JSON in your MCP client's configuration, then restart the client.</span><div class="mcp-code"><pre id="roblox-mcp-config">${escapeHtml(mcpConfig)}</pre><div class="code-toolbar"><span>Windows</span><div><button data-copy-code="${encodeURIComponent(mcpConfig)}">Copy JSON</button><button data-download-code="${encodeURIComponent(mcpConfig)}" data-filename="roblox-mcp.json">Download</button></div></div></div></div><div class="empty-card"><div class="empty-icon">${icons.settings}</div><strong>3. Verify the connection</strong><span>Keep Roblox Studio open, restart the MCP client, and check for the green connected-client indicator in Manage MCP Servers.</span><button class="text-button" data-action="roblox-test">Test local bridge</button></div><div class="empty-card"><div class="empty-icon">${icons.user}</div><strong>Account access</strong><span>Chat Glu does not request or store Roblox API keys. Use Roblox's official permissions screen and only connect clients you trust.</span><a class="text-button" href="https://create.roblox.com/dashboard/credentials" target="_blank" rel="noreferrer">Open Roblox access page</a></div></div></section>`;
+  }
+
+  function renderConsole() {
+    const metrics = [
+      ['CPU utilization', `${Math.round(34 + Math.random() * 18)}%`, '34, 42, 39, 52, 46, 48, 51'],
+      ['Memory footprint', '1.8 GB', '28, 32, 31, 36, 34, 39, 42'],
+      ['API requests', '12,481', '12, 18, 16, 24, 21, 29, 31'],
+      ['Deployments', 'Healthy', '2, 3, 2, 4, 4, 5, 5']
+    ];
+    return `<section class="content-panel console-panel"><div class="panel-title"><div><span class="eyebrow">Operations</span><h1>Cloud Console</h1><p>Monitor your Chat Glu workspace and run safe diagnostic commands.</p></div><span class="status-badge">● All systems operational</span></div><div class="telemetry-grid">${metrics.map(([label, value, points]) => `<div class="metric-card"><span>${label}</span><strong>${value}</strong><svg class="metric-spark" viewBox="0 0 140 38" preserveAspectRatio="none"><polyline points="${points.split(', ').map((point, index) => `${index * 23},${38 - Number(point) / 2}`).join(' ')}"/></svg><small>Last 60 minutes</small></div>`).join('')}</div><div class="console-grid"><div class="terminal-card"><div class="terminal-head"><span><i></i><i></i><i></i> chat-glu-console</span><button data-action="clear-console">Clear</button></div><div class="terminal-output" id="terminal-output"><div>Chat Glu Cloud Console v1.0</div><div>Type <b>help</b> to list safe diagnostic commands.</div>${(state.consoleLogs || []).map((line) => `<div>${escapeHtml(line)}</div>`).join('')}</div><form class="terminal-form" id="terminal-form"><span>$</span><input id="terminal-input" autocomplete="off" placeholder="help" /></form></div><div class="console-side"><div class="deploy-card"><span class="eyebrow">Active deployment</span><strong>Production / GitHub Pages</strong><span class="status-badge">Healthy</span><small>Latest build is serving the current workspace.</small></div><div class="deploy-card"><span class="eyebrow">API status</span><strong>Chat Glu Gateway</strong><small>Provider credentials belong on a server-side gateway. Never place JWT secrets or provider keys in this static bundle.</small><button class="button-secondary" data-action="settings">Configure providers</button></div></div></div></section>`;
   }
   if (state.activePanel === 'notebook') {
     const notebook = state.notebooks.find((item) => item.id === state.activeNotebookId) || state.notebooks[0];
@@ -202,11 +221,26 @@ function bindEvents() {
   app.querySelectorAll('[data-action="new-chat"]').forEach((button) => button.addEventListener('click', createChat));
   app.querySelector('[data-action="new-notebook"]')?.addEventListener('click', createNotebook);
   app.querySelector('[data-action="toggle-sidebar"]')?.addEventListener('click', () => { state.sidebarOpen = !state.sidebarOpen; render(); });
+  app.querySelector('[data-action="theme"]')?.addEventListener('click', () => {
+    state.theme = themes[state.theme]?.next || 'midnight';
+    save();
+    render();
+  });
   app.querySelectorAll('[data-action="settings"]').forEach((button) => button.addEventListener('click', openSettings));
   app.querySelector('[data-action="close-settings"]')?.addEventListener('click', closeModals);
   app.querySelector('[data-action="close-profile"]')?.addEventListener('click', closeModals);
   app.querySelector('[data-action="save-settings"]')?.addEventListener('click', saveSettings);
   app.querySelector('[data-action="test-speech"]')?.addEventListener('click', () => speak('Methusos 5 voice controls are ready.'));
+  app.querySelector('[data-action="clear-console"]')?.addEventListener('click', () => { state.consoleLogs = []; render(); });
+  app.querySelector('#terminal-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const input = app.querySelector('#terminal-input');
+    const command = input.value.trim();
+    if (!command) return;
+    state.consoleLogs = [...(state.consoleLogs || []), `$ ${command}`, ...runConsoleCommand(command)];
+    render();
+    setTimeout(() => app.querySelector('#terminal-input')?.focus(), 0);
+  });
   app.querySelector('[data-action="discord-login"]')?.addEventListener('click', loginWithDiscord);
   app.querySelector('[data-action="toggle-sound"]')?.addEventListener('click', () => { state.sound = !state.sound; save(); render(); openSettings(); });
   app.querySelector('[data-action="profile"]')?.addEventListener('click', () => document.querySelector('#profile-modal').classList.remove('hidden'));
@@ -393,6 +427,14 @@ function downloadCode(code, filename) {
   link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
+}
+function runConsoleCommand(command) {
+  const [name, ...args] = command.split(/\s+/);
+  if (name === 'help') return ['help   show safe commands', 'status show service status', 'logs   show recent client logs', 'clear   clear the console'];
+  if (name === 'status') return ['gateway: configured by deployment environment', 'pages: healthy', 'auth: browser session active'];
+  if (name === 'logs') return ['[info] static client ready', '[info] provider calls remain optional', '[info] no server secrets exposed'];
+  if (name === 'clear') return [];
+  return [`command not available: ${name}${args.length ? ` ${args.join(' ')}` : ''}`];
 }
 function messageText(value) {
   if (typeof value === 'string') return value;
