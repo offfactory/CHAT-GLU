@@ -3,6 +3,10 @@
 :root[data-theme="cyberpunk"] { --page: #100a1d; --panel: #1b1230; --panel-2: #2b1b48; --line: #593b82; --text: #faf5ff; --muted: #c4b5fd; --soft: #ede9fe; }
 :root[data-theme="emerald"] { --page: #07120d; --panel: #0e2116; --panel-2: #163522; --line: #2b6542; --text: #ecfdf3; --muted: #9ac7aa; --soft: #d1fae5; }
 :root[data-theme="solarized"] { --page: #fdf6e3; --panel: #eee8d5; --panel-2: #e5dfcb; --line: #d3cbb5; --text: #073642; --muted: #657b83; --soft: #586e75; }
+:root[data-theme="deep-space"] { --page: #030305; --panel: #0b0a12; --panel-2: #171326; --line: #352b5c; --text: #f4f0ff; --muted: #aaa0c9; --soft: #ded5ff; }
+:root[data-theme="cyber-matrix"] { --page: #070b0a; --panel: #101817; --panel-2: #172722; --line: #285c45; --text: #e9fff2; --muted: #83b99a; --soft: #c7f8d6; }
+:root[data-theme="tokyo-nightstorm"] { --page: #0b1020; --panel: #11182e; --panel-2: #1c2342; --line: #394675; --text: #e8ecff; --muted: #9aa7d4; --soft: #d9ddff; }
+:root[data-theme="solarized-darkroom"] { --page: #151719; --panel: #202426; --panel-2: #2a3031; --line: #50504a; --text: #f5e9c9; --muted: #b9ad8d; --soft: #e3d4ad; }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--bg, #101011); }
 button, textarea, input { font: inherit; }
@@ -85,6 +89,19 @@ svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width:
 .collaborators { display: flex; align-items: center; gap: 5px; margin-top: 16px; }
 .room-presence, .room-note { color: var(--muted); font-size: 11px; }
 .room-note { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--line); line-height: 1.5; }
+.swarm-graph { position: relative; min-height: 360px; margin-top: 24px; padding: 24px; border: 1px solid var(--line); border-radius: 12px; background: radial-gradient(circle at center, var(--panel-2), var(--panel)); }
+.agent-node { position: absolute; z-index: 1; display: flex; width: 170px; flex-direction: column; gap: 5px; padding: 13px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); box-shadow: 0 12px 25px rgba(0,0,0,.22); }
+.agent-node small { color: var(--muted); font-size: 11px; }
+.node-dot { width: 8px; height: 8px; border-radius: 50%; background: #86efac; box-shadow: 0 0 12px #86efac; }
+.node-0 { top: 30px; left: calc(50% - 85px); border-color: #86efac; }
+.node-1 { bottom: 28px; left: 7%; }.node-2 { bottom: 28px; left: calc(50% - 85px); }.node-3 { bottom: 28px; right: 7%; }.node-4 { top: 145px; right: 7%; }
+.graph-line { position: absolute; height: 1px; background: var(--line); transform-origin: left center; }
+.line-one { width: 43%; top: 119px; left: 27%; transform: rotate(35deg); }.line-two { width: 43%; top: 119px; left: 29%; transform: rotate(145deg); }
+.model-gateway-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 13px; margin-top: 24px; }
+.gateway-card { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 17px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--text); text-align: left; }
+.gateway-card:hover { border-color: var(--soft); background: var(--panel-2); }.gateway-card small, .gateway-card span { color: var(--muted); font-size: 11px; }
+.erd-canvas { position: relative; min-height: 330px; margin-top: 24px; border: 1px solid var(--line); border-radius: 12px; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 28px 28px; }
+.erd-node { position: absolute; display: flex; width: 170px; flex-direction: column; gap: 7px; padding: 14px; border: 1px solid var(--soft); border-radius: 8px; background: var(--panel); box-shadow: 0 10px 20px rgba(0,0,0,.2); }.erd-node span { color: var(--muted); font: 11px ui-monospace, Consolas, monospace; }.erd-node:nth-child(1) { top: 40px; left: 8%; }.erd-node:nth-child(2) { top: 160px; left: 39%; }.erd-node:nth-child(3) { top: 55px; right: 8%; }
 .auth-shell { display: grid; grid-template-columns: minmax(360px, 520px) minmax(320px, 1fr); min-height: 100vh; background: #09090b; color: #f4f4f5; }
 .auth-card { display: flex; flex-direction: column; justify-content: center; width: min(430px, calc(100% - 48px)); margin: auto; }
 .auth-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 42px; font: 700 23px Georgia, serif; }

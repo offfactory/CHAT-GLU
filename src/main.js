@@ -45,7 +45,7 @@ const state = {
   activeChatId: localStorage.getItem('chat-glu-active') || 'welcome',
   modelId: localStorage.getItem('chat-glu-model') || 'methusos',
   mode: localStorage.getItem('chat-glu-mode') || 'Chat',
-  theme: ['midnight', 'cyberpunk', 'emerald', 'solarized'].includes(localStorage.getItem('chat-glu-theme')) ? localStorage.getItem('chat-glu-theme') : 'midnight',
+  theme: themes[localStorage.getItem('chat-glu-theme')] ? localStorage.getItem('chat-glu-theme') : 'midnight',
   credits: Number(localStorage.getItem('chat-glu-credits') || 900),
   profile: saved('chat-glu-profile', { name: 'My account', email: 'Local profile', avatar: 'M', photo: '' }),
   files: saved('chat-glu-files', []),
@@ -61,7 +61,11 @@ const themes = {
   midnight: { label: 'Midnight Obsidian', next: 'cyberpunk' },
   cyberpunk: { label: 'Cyberpunk Neon', next: 'emerald' },
   emerald: { label: 'Emerald Minimal', next: 'solarized' },
-  solarized: { label: 'Solarized Light', next: 'midnight' }
+  solarized: { label: 'Solarized Light', next: 'deep-space' },
+  'deep-space': { label: 'Deep Space Obsidian', next: 'cyber-matrix' },
+  'cyber-matrix': { label: 'Cyber Matrix', next: 'tokyo-nightstorm' },
+  'tokyo-nightstorm': { label: 'Tokyo Nightstorm', next: 'solarized-darkroom' },
+  'solarized-darkroom': { label: 'Solarized Darkroom', next: 'midnight' }
 };
 
 const promptTemplates = [
@@ -86,6 +90,24 @@ function save() {
   localStorage.setItem('chat-glu-profile', JSON.stringify(state.profile));
   localStorage.setItem('chat-glu-files', JSON.stringify(state.files));
   localStorage.setItem('chat-glu-sound', state.sound ? 'on' : 'off');
+}
+
+function renderSwarm() {
+  const nodes = [['Manager', 'Planning'], ['Code Architect', 'Ready'], ['UI Stylist', 'Working'], ['Security Auditor', 'Queued'], ['Test Writer', 'Queued']];
+  return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Autonomous workflow</span><h1>Agent Swarm</h1><p>Manager-worker orchestration with observable task state transitions.</p></div><button class="button-primary" data-action="start-swarm">Run workflow</button></div><div class="swarm-graph">${nodes.map((node, i) => `<div class="agent-node node-${i}"><span class="node-dot"></span><strong>${node[0]}</strong><small>${node[1]}</small></div>`).join('')}<div class="graph-line line-one"></div><div class="graph-line line-two"></div></div><div class="room-note">Production orchestration should use a server-side queue, signed job IDs, least-privilege tools, cancellation, and an append-only audit log. Never let an agent execute arbitrary production commands.</div></section>`;
+}
+
+function renderPipeline() {
+  return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Delivery automation</span><h1>Pipeline Health</h1><p>Watch builds, inspect failures, and review proposed fixes before applying them.</p></div><span class="status-badge">● Healthy</span></div><div class="pipeline-card"><div><strong>GitHub Actions · main</strong><span class="status-badge">Passed</span><small>Build, deploy, and Pages checks are green.</small></div><div class="pipeline-steps"><span>Build</span><span>Test</span><span>Analyze</span><span>Deploy</span></div><button class="button-secondary" data-action="refresh-pipeline">Refresh status</button></div></section>`;
+}
+
+function renderModels() {
+  const providers = [['Claude 3.5 Sonnet', 'Cloud', '92 tok/s'], ['OpenAI o3', 'Cloud', '78 tok/s'], ['Ollama / Llama 3', 'Local', '44 tok/s']];
+  return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Unified gateway</span><h1>Model Gateway</h1><p>Switch between cloud reasoning and local privacy models.</p></div><span class="status-badge">● Gateway ready</span></div><div class="model-gateway-grid">${providers.map((provider) => `<button class="gateway-card"><strong>${provider[0]}</strong><small>${provider[1]} · ${provider[2]}</small><span>Latency 180ms · Memory tracked server-side</span></button>`).join('')}</div><div class="room-note">Route provider calls through a backend gateway that owns credentials, rate limits, redaction, retries, and telemetry. Ollama should remain on a private network.</div></section>`;
+}
+
+function renderErd() {
+  return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Architecture tools</span><h1>ERD Canvas</h1><p>Import SQL or model notes, then arrange a visual schema before syncing reviewed changes.</p></div><button class="button-primary" data-action="erd-import">Import schema</button></div><div class="erd-canvas"><div class="erd-node"><strong>users</strong><span>id · email · created_at</span></div><div class="erd-node"><strong>chats</strong><span>id · user_id · title</span></div><div class="erd-node"><strong>messages</strong><span>id · chat_id · content</span></div><div class="erd-edge"></div></div><div class="room-note">Bi-directional sync should generate a migration preview and require explicit review before writing backend files.</div></section>`;
 }
 
 function clickSound() {
@@ -128,6 +150,10 @@ function render() {
           <button class="nav-item ${state.activePanel === 'console' ? 'active' : ''}" data-panel="console">${icons.code}<span>Cloud Console</span></button>
           <button class="nav-item ${state.activePanel === 'prompts' ? 'active' : ''}" data-panel="prompts">${icons.book}<span>Prompt Library</span></button>
           <button class="nav-item ${state.activePanel === 'rooms' ? 'active' : ''}" data-panel="rooms">${icons.user}<span>Shared Rooms</span></button>
+          <button class="nav-item ${state.activePanel === 'swarm' ? 'active' : ''}" data-panel="swarm">${icons.code}<span>Agent Swarm</span></button>
+          <button class="nav-item ${state.activePanel === 'pipeline' ? 'active' : ''}" data-panel="pipeline">${icons.settings}<span>Pipeline Health</span></button>
+          <button class="nav-item ${state.activePanel === 'models' ? 'active' : ''}" data-panel="models">${icons.search}<span>Model Gateway</span></button>
+          <button class="nav-item ${state.activePanel === 'erd' ? 'active' : ''}" data-panel="erd">${icons.book}<span>ERD Canvas</span></button>
         </nav>
         <div class="sidebar-section notebooks-nav">
           <div class="section-heading">Notebooks <button class="icon-button small" data-action="new-notebook" aria-label="New notebook">${icons.plus}</button></div>
@@ -185,6 +211,10 @@ function renderPanel(chat, model) {
   if (state.activePanel === 'console') return renderConsole();
   if (state.activePanel === 'prompts') return renderPromptLibrary();
   if (state.activePanel === 'rooms') return renderRooms();
+  if (state.activePanel === 'swarm') return renderSwarm();
+  if (state.activePanel === 'pipeline') return renderPipeline();
+  if (state.activePanel === 'models') return renderModels();
+  if (state.activePanel === 'erd') return renderErd();
   if (state.activePanel === 'images') return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Creative studio</span><h1>Images</h1><p>Generate visual concepts with Methusos 5 through Puter.</p></div><button class="button-primary" data-action="image-prompt">${icons.image} Create image</button></div><div class="empty-grid"><div class="empty-card"><div class="empty-icon">${icons.image}</div><strong>Image generation</strong><span>Ask Methusos 5 to create a visual and save it here.</span><button class="text-button" data-action="image-prompt">Start creating</button></div></div></section>`;
   if (state.activePanel === 'files') return `<section class="content-panel"><div class="panel-title"><div><span class="eyebrow">Your workspace</span><h1>Library</h1><p>Files you upload become context for your chats and notebooks.</p></div><button class="button-primary" data-action="upload">${icons.plus} Upload files</button></div><div class="file-grid">${state.files.length ? state.files.map((file) => `<div class="file-card">${icons.file}<strong>${escapeHtml(file.name)}</strong><small>${file.size}</small></div>`).join('') : '<div class="empty-card"><div class="empty-icon">' + icons.file + '</div><strong>Your library is empty</strong><span>Upload notes, images, or documents to use them in chat.</span><button class="text-button" data-action="upload">Upload a file</button></div>'}</div></section>`;
   if (state.activePanel === 'coder') return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Methusos 5 workspace</span><h1>Coder</h1><p>Build with chat, files, code plans, and safe browser previews.</p></div><button class="button-primary" data-action="coder-chat">${icons.code} Start coding</button></div><div class="coder-grid"><div class="empty-card"><div class="empty-icon">${icons.code}</div><strong>Chat with your code</strong><span>Upload a project file, ask for a fix, or generate a starter component.</span><button class="text-button" data-action="coder-chat">Open code mode</button></div><div class="empty-card"><div class="empty-icon">${icons.file}</div><strong>Safe command notes</strong><span>Methusos 5 can explain commands and generate scripts. It does not run unknown shell commands in your browser.</span></div></div></section>`;
@@ -262,6 +292,9 @@ function bindEvents() {
     localStorage.setItem('chat-glu-room', room);
     alert(`Joined ${room}. Connect a WebSocket backend for multi-user sync.`);
   });
+  app.querySelector('[data-action="start-swarm"]')?.addEventListener('click', () => alert('Swarm queued locally. Connect a signed server job endpoint to run agents.'));
+  app.querySelector('[data-action="refresh-pipeline"]')?.addEventListener('click', () => alert('Pipeline status refreshed from the local preview. Connect GitHub Actions webhooks for live status.'));
+  app.querySelector('[data-action="erd-import"]')?.addEventListener('click', () => alert('Schema import accepts SQL/model files through the secure backend integration.'));
   app.querySelector('[data-action="close-settings"]')?.addEventListener('click', closeModals);
   app.querySelector('[data-action="close-profile"]')?.addEventListener('click', closeModals);
   app.querySelector('[data-action="save-settings"]')?.addEventListener('click', saveSettings);
