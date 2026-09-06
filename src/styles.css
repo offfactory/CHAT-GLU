@@ -74,6 +74,17 @@ svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width:
 .terminal-form input { flex: 1; border: 0; outline: 0; background: transparent; color: #f4f4f5; font: inherit; }
 .console-side { display: grid; align-content: start; gap: 14px; }
 .console-side .button-secondary { margin-top: 8px; }
+.prompt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; padding-top: 24px; }
+.prompt-card, .room-card { display: flex; flex-direction: column; gap: 10px; padding: 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.prompt-card strong { font-size: 15px; }
+.prompt-card p { min-height: 52px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.prompt-card .button-secondary { margin-top: auto; }
+.room-card { max-width: 680px; margin-top: 24px; }
+.room-card label { color: var(--muted); font-size: 12px; }
+.room-card input { display: block; width: 100%; margin-top: 7px; padding: 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--text); }
+.collaborators { display: flex; align-items: center; gap: 5px; margin-top: 16px; }
+.room-presence, .room-note { color: var(--muted); font-size: 11px; }
+.room-note { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--line); line-height: 1.5; }
 .auth-shell { display: grid; grid-template-columns: minmax(360px, 520px) minmax(320px, 1fr); min-height: 100vh; background: #09090b; color: #f4f4f5; }
 .auth-card { display: flex; flex-direction: column; justify-content: center; width: min(430px, calc(100% - 48px)); margin: auto; }
 .auth-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 42px; font: 700 23px Georgia, serif; }
@@ -151,6 +162,9 @@ svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width:
 .code-toolbar div { display: flex; gap: 6px; }
 .code-toolbar button { padding: 5px 8px; border: 1px solid #3c4641; border-radius: 5px; background: #202523; color: #d8eee0; font-size: 11px; }
 .code-toolbar button:hover { border-color: #39ff88; color: #39ff88; }
+.run-output { margin: 0; padding: 10px 15px; border-top: 1px solid #303236; color: #a7f3d0; font: 12px/1.5 ui-monospace, Consolas, monospace; white-space: pre-wrap; }
+.mic-button { color: #a1a1aa; }
+.mic-button:hover { color: #f4f4f5; background: var(--panel-2); }
 .code-card pre { overflow-x: auto; margin: 0; padding: 15px; color: #e8f5eb; font: 13px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace; tab-size: 2; }
 [data-theme="green"] .code-card { border-color: #1b5933; box-shadow: 0 0 25px rgba(57,255,136,.1); }
 .speak-button { display: inline-flex; align-items: center; gap: 5px; margin-top: 9px; padding: 4px 7px; border-radius: 5px; background: transparent; color: var(--muted); font-size: 10px; }

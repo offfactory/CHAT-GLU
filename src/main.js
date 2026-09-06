@@ -64,6 +64,13 @@ const themes = {
   solarized: { label: 'Solarized Light', next: 'midnight' }
 };
 
+const promptTemplates = [
+  { id: 'debug', title: 'Debug a script', category: 'Development', body: 'Review this code, identify the root cause, explain the fix, and return a tested replacement:\n\n' },
+  { id: 'roblox', title: 'Roblox Luau system', category: 'Roblox', body: 'Create a secure Roblox Luau system for: \nInclude server/client separation, validation, and setup steps.' },
+  { id: 'study', title: 'Study tutor', category: 'Learning', body: 'Teach me this topic step by step, then give me a short quiz:\n\n' },
+  { id: 'creative', title: 'Creative concept', category: 'Writing', body: 'Develop this idea with a clear hook, tone, characters, and three next directions:\n\n' }
+];
+
 const app = document.querySelector('#app');
 const activeChat = () => state.chats.find((chat) => chat.id === state.activeChatId) || state.chats[0];
 const currentModel = () => models.find((model) => model.id === state.modelId) || models[0];
@@ -119,6 +126,8 @@ function render() {
           <button class="nav-item ${state.activePanel === 'coder' ? 'active' : ''}" data-panel="coder">${icons.code}<span>Coder</span></button>
           <button class="nav-item ${state.activePanel === 'roblox' ? 'active' : ''}" data-panel="roblox">${icons.roblox}<span>Roblox Studio</span></button>
           <button class="nav-item ${state.activePanel === 'console' ? 'active' : ''}" data-panel="console">${icons.code}<span>Cloud Console</span></button>
+          <button class="nav-item ${state.activePanel === 'prompts' ? 'active' : ''}" data-panel="prompts">${icons.book}<span>Prompt Library</span></button>
+          <button class="nav-item ${state.activePanel === 'rooms' ? 'active' : ''}" data-panel="rooms">${icons.user}<span>Shared Rooms</span></button>
         </nav>
         <div class="sidebar-section notebooks-nav">
           <div class="section-heading">Notebooks <button class="icon-button small" data-action="new-notebook" aria-label="New notebook">${icons.plus}</button></div>
@@ -174,12 +183,23 @@ function bindAuthEvents() {
 
 function renderPanel(chat, model) {
   if (state.activePanel === 'console') return renderConsole();
+  if (state.activePanel === 'prompts') return renderPromptLibrary();
+  if (state.activePanel === 'rooms') return renderRooms();
   if (state.activePanel === 'images') return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Creative studio</span><h1>Images</h1><p>Generate visual concepts with Methusos 5 through Puter.</p></div><button class="button-primary" data-action="image-prompt">${icons.image} Create image</button></div><div class="empty-grid"><div class="empty-card"><div class="empty-icon">${icons.image}</div><strong>Image generation</strong><span>Ask Methusos 5 to create a visual and save it here.</span><button class="text-button" data-action="image-prompt">Start creating</button></div></div></section>`;
   if (state.activePanel === 'files') return `<section class="content-panel"><div class="panel-title"><div><span class="eyebrow">Your workspace</span><h1>Library</h1><p>Files you upload become context for your chats and notebooks.</p></div><button class="button-primary" data-action="upload">${icons.plus} Upload files</button></div><div class="file-grid">${state.files.length ? state.files.map((file) => `<div class="file-card">${icons.file}<strong>${escapeHtml(file.name)}</strong><small>${file.size}</small></div>`).join('') : '<div class="empty-card"><div class="empty-icon">' + icons.file + '</div><strong>Your library is empty</strong><span>Upload notes, images, or documents to use them in chat.</span><button class="text-button" data-action="upload">Upload a file</button></div>'}</div></section>`;
   if (state.activePanel === 'coder') return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Methusos 5 workspace</span><h1>Coder</h1><p>Build with chat, files, code plans, and safe browser previews.</p></div><button class="button-primary" data-action="coder-chat">${icons.code} Start coding</button></div><div class="coder-grid"><div class="empty-card"><div class="empty-icon">${icons.code}</div><strong>Chat with your code</strong><span>Upload a project file, ask for a fix, or generate a starter component.</span><button class="text-button" data-action="coder-chat">Open code mode</button></div><div class="empty-card"><div class="empty-icon">${icons.file}</div><strong>Safe command notes</strong><span>Methusos 5 can explain commands and generate scripts. It does not run unknown shell commands in your browser.</span></div></div></section>`;
   if (state.activePanel === 'roblox') {
     const mcpConfig = JSON.stringify({ mcpServers: { Roblox_Studio: { command: 'cmd.exe', args: ['/c', '%LOCALAPPDATA%\\\\Roblox\\\\mcp.bat'] } } }, null, 2);
     return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Creator connection</span><h1>Roblox Studio MCP</h1><p>Connect Methusos 5.1 to your open Studio session with Roblox's local MCP server.</p></div><button class="button-primary" data-action="roblox-connect">${icons.roblox} Open setup</button></div><div class="coder-grid"><div class="empty-card"><div class="empty-icon">${icons.roblox}</div><strong>1. Enable Studio MCP</strong><span>In Roblox Studio open Assistant, choose … → Manage MCP Servers, then enable Studio as an MCP server.</span><button class="text-button" data-action="roblox-connect">Open connection settings</button></div><div class="empty-card"><div class="empty-icon">${icons.code}</div><strong>2. Add this client config</strong><span>Use this JSON in your MCP client's configuration, then restart the client.</span><div class="mcp-code"><pre id="roblox-mcp-config">${escapeHtml(mcpConfig)}</pre><div class="code-toolbar"><span>Windows</span><div><button data-copy-code="${encodeURIComponent(mcpConfig)}">Copy JSON</button><button data-download-code="${encodeURIComponent(mcpConfig)}" data-filename="roblox-mcp.json">Download</button></div></div></div></div><div class="empty-card"><div class="empty-icon">${icons.settings}</div><strong>3. Verify the connection</strong><span>Keep Roblox Studio open, restart the MCP client, and check for the green connected-client indicator in Manage MCP Servers.</span><button class="text-button" data-action="roblox-test">Test local bridge</button></div><div class="empty-card"><div class="empty-icon">${icons.user}</div><strong>Account access</strong><span>Chat Glu does not request or store Roblox API keys. Use Roblox's official permissions screen and only connect clients you trust.</span><a class="text-button" href="https://create.roblox.com/dashboard/credentials" target="_blank" rel="noreferrer">Open Roblox access page</a></div></div></section>`;
+  }
+
+  function renderPromptLibrary() {
+    return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Reusable instructions</span><h1>Prompt Library</h1><p>Insert a focused starting point into your next chat.</p></div></div><div class="prompt-grid">${promptTemplates.map((item) => `<article class="prompt-card"><span class="eyebrow">${escapeHtml(item.category)}</span><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.body.slice(0, 100))}</p><button class="button-secondary" data-template="${item.id}">Insert template</button></article>`).join('')}</div></section>`;
+  }
+
+  function renderRooms() {
+    const room = localStorage.getItem('chat-glu-room') || 'personal';
+    return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Realtime workspace</span><h1>Shared Rooms</h1><p>Room UI is ready for a secure WebSocket or Supabase Realtime backend.</p></div><span class="status-badge">● You are online</span></div><div class="room-card"><label>Room name<input id="room-name" value="${escapeHtml(room)}" /></label><button class="button-primary" data-action="join-room">Join room</button><div class="collaborators"><span class="avatar">Y</span><span class="avatar">A</span><span class="avatar">C</span><span class="room-presence">3 collaborators · local preview</span></div><div class="room-note">Production rooms should authenticate the socket handshake, authorize room membership server-side, and broadcast presence and typing events without trusting client-supplied identities.</div></div></section>`;
   }
 
   function renderConsole() {
@@ -195,7 +215,7 @@ function renderPanel(chat, model) {
     const notebook = state.notebooks.find((item) => item.id === state.activeNotebookId) || state.notebooks[0];
     return `<section class="notebook-panel"><div class="panel-title"><div><span class="eyebrow">Study workspace</span><h1>${escapeHtml(notebook.title)}</h1><p>Write, edit, and ask Methusos 5 to turn notes into study material.</p></div><div class="panel-actions"><button class="button-secondary" data-action="study-guide">Generate study guide</button><button class="button-primary" data-action="image-prompt">${icons.image} Generate image</button></div></div><textarea class="notebook-editor" data-notebook-editor="${notebook.id}">${escapeHtml(notebook.body)}</textarea><div class="study-tools"><button data-action="flashcards">Make flashcards</button><button data-action="quiz">Make a quiz</button><button data-action="summarize">Summarize notes</button></div></section>`;
   }
-  return `<section class="chat-view ${chat.messages.length ? 'has-messages' : ''}">${chat.messages.length ? `<div class="message-stack">${chat.messages.map((message, index) => { const text = messageText(message.text); const media = typeof message.media === 'string' ? message.media : message.media?.url || message.media?.src; return `<article class="message ${message.role}"><div class="message-avatar">${message.role === 'user' ? (state.profile.photo ? `<img src="${state.profile.photo}" alt="" />` : escapeHtml(state.profile.avatar)) : providerMark(model)}</div><div class="message-body"><div class="message-label">${message.role === 'user' ? 'You' : model.name}</div>${message.image ? `<div class="generated-image">${media ? `<img src="${escapeHtml(media)}" alt="${escapeHtml(text)}" />` : '<div class="image-spark">M5</div>'}<span>${escapeHtml(text)}</span>${media ? `<a class="download-image" href="${escapeHtml(media)}" download="chat-glu-image.png" target="_blank" rel="noreferrer">Download image</a>` : ''}</div>` : renderMessageContent(text)}<button class="speak-button" data-speak="${escapeHtml(text)}">${icons.volume} Read aloud</button></div></article>`; }).join('')}</div>` : `<div class="welcome"><div class="welcome-mark">M5</div><h1>What can I help you explore?</h1><p>Methusos 5.1 can reason, calculate, code, and create.</p></div>`}<div class="composer-wrap"><form class="composer" id="composer">${state.files.length ? `<div class="attachment-strip">${state.files.slice(-3).map((file) => `<span>${icons.file}${escapeHtml(file.name)}</span>`).join('')}</div>` : ''}<textarea id="prompt" rows="1" placeholder="${state.mode === 'Image' ? 'Describe an image to create...' : state.mode === 'Code' ? 'Describe code you want to build...' : 'Ask Methusos 5.1 anything...'}" aria-label="Message Chat Glu"></textarea><div class="composer-toolbar"><div class="toolbar-left"><button type="button" class="icon-button add-button" data-action="upload" aria-label="Add attachment">${icons.plus}</button><button type="button" class="mode-button" data-action="mode-menu">${state.mode} ${icons.chevron}</button><span class="composer-hint">Methusos 5.1 · Puter optional</span></div><div class="toolbar-right"><button type="button" class="model-selector" data-action="model-menu">${providerMark(model)}<span>${model.name}</span>${icons.chevron}</button><button class="send-button" type="submit" aria-label="Send message">${icons.send}</button></div></div></form><div class="model-menu hidden">${models.map((item) => `<button class="model-option ${item.id === model.id ? 'selected' : ''}" data-model="${item.id}">${providerMark(item)}<span><strong>${item.name}</strong><small>${item.provider} · ${item.detail}</small></span>${item.id === model.id ? '<span class="check">✓</span>' : ''}</button>`).join('')}</div><div class="mode-menu hidden">${model.modes.map((mode) => `<button data-mode="${mode}" class="${mode === state.mode ? 'selected' : ''}">${mode}</button>`).join('')}</div><p class="privacy-note">Puter powers live AI when connected. Methusos 5.1 also works in local demo mode.</p></div></section>`;
+  return `<section class="chat-view ${chat.messages.length ? 'has-messages' : ''}">${chat.messages.length ? `<div class="message-stack">${chat.messages.map((message, index) => { const text = messageText(message.text); const media = typeof message.media === 'string' ? message.media : message.media?.url || message.media?.src; return `<article class="message ${message.role}"><div class="message-avatar">${message.role === 'user' ? (state.profile.photo ? `<img src="${state.profile.photo}" alt="" />` : escapeHtml(state.profile.avatar)) : providerMark(model)}</div><div class="message-body"><div class="message-label">${message.role === 'user' ? 'You' : model.name}</div>${message.image ? `<div class="generated-image">${media ? `<img src="${escapeHtml(media)}" alt="${escapeHtml(text)}" />` : '<div class="image-spark">M5</div>'}<span>${escapeHtml(text)}</span>${media ? `<a class="download-image" href="${escapeHtml(media)}" download="chat-glu-image.png" target="_blank" rel="noreferrer">Download image</a>` : ''}</div>` : renderMessageContent(text)}<button class="speak-button" data-speak="${escapeHtml(text)}">${icons.volume} Read aloud</button></div></article>`; }).join('')}</div>` : `<div class="welcome"><div class="welcome-mark">M5</div><h1>What can I help you explore?</h1><p>Methusos 5.1 can reason, calculate, code, and create.</p></div>`}<div class="composer-wrap"><form class="composer" id="composer">${state.files.length ? `<div class="attachment-strip">${state.files.slice(-3).map((file) => `<span>${icons.file}${escapeHtml(file.name)}</span>`).join('')}</div>` : ''}<textarea id="prompt" rows="1" placeholder="${state.mode === 'Image' ? 'Describe an image to create...' : state.mode === 'Code' ? 'Describe code you want to build...' : 'Ask Methusos 5.1 anything...'}" aria-label="Message Chat Glu"></textarea><div class="composer-toolbar"><div class="toolbar-left"><button type="button" class="icon-button add-button" data-action="upload" aria-label="Add attachment">${icons.plus}</button><button type="button" class="icon-button mic-button" data-action="mic" aria-label="Voice input">●</button><button type="button" class="mode-button" data-action="mode-menu">${state.mode} ${icons.chevron}</button><span class="composer-hint">Methusos 5.1 · Puter optional</span></div><div class="toolbar-right"><button type="button" class="button-secondary export-button" data-action="export-md">Export</button><button type="button" class="model-selector" data-action="model-menu">${providerMark(model)}<span>${model.name}</span>${icons.chevron}</button><button class="send-button" type="submit" aria-label="Send message">${icons.send}</button></div></div></form><div class="model-menu hidden">${models.map((item) => `<button class="model-option ${item.id === model.id ? 'selected' : ''}" data-model="${item.id}">${providerMark(item)}<span><strong>${item.name}</strong><small>${item.provider} · ${item.detail}</small></span>${item.id === model.id ? '<span class="check">✓</span>' : ''}</button>`).join('')}</div><div class="mode-menu hidden">${model.modes.map((mode) => `<button data-mode="${mode}" class="${mode === state.mode ? 'selected' : ''}">${mode}</button>`).join('')}</div><p class="privacy-note">Puter powers live AI when connected. Methusos 5.1 also works in local demo mode.</p></div></section>`;
 }
 
 function renderSettingsModal() {
@@ -227,6 +247,21 @@ function bindEvents() {
     render();
   });
   app.querySelectorAll('[data-action="settings"]').forEach((button) => button.addEventListener('click', openSettings));
+  app.querySelectorAll('[data-template]').forEach((button) => button.addEventListener('click', () => {
+    state.activePanel = 'chat';
+    save();
+    render();
+    setTimeout(() => {
+      const prompt = document.querySelector('#prompt');
+      const template = promptTemplates.find((item) => item.id === button.dataset.template);
+      if (prompt && template) { prompt.value = template.body; prompt.focus(); }
+    }, 0);
+  }));
+  app.querySelector('[data-action="join-room"]')?.addEventListener('click', () => {
+    const room = document.querySelector('#room-name').value.trim() || 'personal';
+    localStorage.setItem('chat-glu-room', room);
+    alert(`Joined ${room}. Connect a WebSocket backend for multi-user sync.`);
+  });
   app.querySelector('[data-action="close-settings"]')?.addEventListener('click', closeModals);
   app.querySelector('[data-action="close-profile"]')?.addEventListener('click', closeModals);
   app.querySelector('[data-action="save-settings"]')?.addEventListener('click', saveSettings);
@@ -260,6 +295,10 @@ function bindEvents() {
     setTimeout(() => { button.textContent = 'Copy'; }, 1200);
   }));
   app.querySelectorAll('[data-download-code]').forEach((button) => button.addEventListener('click', () => downloadCode(decodeURIComponent(button.dataset.downloadCode), button.dataset.filename || 'methusos-script.lua')));
+  app.querySelector('[data-action="mic"]')?.addEventListener('click', toggleSpeechRecognition);
+  app.querySelector('[data-action="export-md"]')?.addEventListener('click', () => downloadCode(exportChatMarkdown(), 'chat-glu-session.md'));
+  app.querySelector('[data-action="export-html"]')?.addEventListener('click', () => downloadCode(exportChatHtml(), 'chat-glu-session.html'));
+  app.querySelectorAll('[data-run-code]').forEach((button) => button.addEventListener('click', () => runBrowserCode(decodeURIComponent(button.dataset.runCode), button.dataset.target)));
   app.querySelector('#composer')?.addEventListener('submit', sendMessage);
   app.querySelector('#prompt')?.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); app.querySelector('#composer').requestSubmit(); } });
   app.querySelectorAll('[data-action="image-prompt"]').forEach((button) => button.addEventListener('click', () => { state.activePanel = 'chat'; state.mode = 'Image'; save(); render(); document.querySelector('#prompt')?.focus(); }));
@@ -412,7 +451,7 @@ function renderMessageContent(value) {
     const code = match[2].replace(/\r?\n$/, '');
     const encoded = encodeURIComponent(code);
     const filename = language.toLowerCase() === 'lua' ? 'methusos-script.lua' : `methusos-code.${language.toLowerCase() === 'javascript' ? 'js' : language.toLowerCase()}`;
-    parts.push(`<div class="code-card"><div class="code-toolbar"><span>${escapeHtml(language)}</span><div><button data-copy-code="${encoded}">Copy</button><button data-download-code="${encoded}" data-filename="${filename}">Download</button></div></div><pre><code>${escapeHtml(code)}</code></pre></div>`);
+    parts.push(`<div class="code-card"><div class="code-toolbar"><span>${escapeHtml(language)}</span><div><button data-run-code="${encoded}">Run Test</button><button data-copy-code="${encoded}">Copy</button><button data-download-code="${encoded}" data-filename="${filename}">Download</button></div></div><pre><code>${escapeHtml(code)}</code></pre><pre class="run-output hidden" data-run-output="${encoded}"></pre></div>`);
     cursor = match.index + match[0].length;
   }
   const remainder = text.slice(cursor).trim();
@@ -435,6 +474,40 @@ function runConsoleCommand(command) {
   if (name === 'logs') return ['[info] static client ready', '[info] provider calls remain optional', '[info] no server secrets exposed'];
   if (name === 'clear') return [];
   return [`command not available: ${name}${args.length ? ` ${args.join(' ')}` : ''}`];
+}
+let recognition;
+function toggleSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) { alert('Speech recognition is not supported in this browser.'); return; }
+  if (recognition) { recognition.stop(); recognition = null; return; }
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.onresult = (event) => {
+    const prompt = document.querySelector('#prompt');
+    if (prompt) prompt.value = Array.from(event.results).map((result) => result[0].transcript).join(' ');
+  };
+  recognition.onend = () => { recognition = null; };
+  recognition.start();
+}
+function runBrowserCode(code, target) {
+  const output = document.querySelector(`[data-run-output="${target || encodeURIComponent(code)}"]`) || document.querySelector('.run-output');
+  if (!output) return;
+  output.classList.remove('hidden');
+  try {
+    const logs = [];
+    const result = Function('console', `"use strict"; ${code}`)({ log: (...values) => logs.push(values.join(' ')) });
+    output.textContent = [...logs, result === undefined ? 'Done.' : String(result)].join('\n');
+  } catch (error) {
+    output.textContent = `Error: ${error.message}`;
+  }
+}
+function exportChatMarkdown() {
+  const chat = activeChat();
+  return `# ${chat.title}\n\n${chat.messages.map((message) => `## ${message.role === 'user' ? 'You' : 'Methusos 5.1'}\n\n${messageText(message.text)}`).join('\n\n')}\n`;
+}
+function exportChatHtml() {
+  return `<!doctype html><meta charset="utf-8"><title>Chat Glu export</title><style>body{font:16px system-ui;max-width:800px;margin:40px auto;background:#09090b;color:#f4f4f5}article{padding:16px;border:1px solid #3f3f46;border-radius:8px;margin:12px 0}</style><h1>Chat Glu export</h1>${activeChat().messages.map((message) => `<article><b>${message.role}</b><p>${escapeHtml(messageText(message.text)).replace(/\n/g, '<br>')}</p></article>`).join('')}`;
 }
 function messageText(value) {
   if (typeof value === 'string') return value;
