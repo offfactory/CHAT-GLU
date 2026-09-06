@@ -213,6 +213,9 @@ svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width:
 .discord-button:hover { background: #4752c4; }
 .coder-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding-top: 24px; }
 .coder-grid .empty-card { min-height: 220px; }
+.mcp-code { width: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #111713; }
+.mcp-code pre { overflow-x: auto; margin: 0; padding: 11px; color: #d9ffe4; font: 11px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.mcp-code .code-toolbar { border-top: 1px solid #26372c; border-bottom: 0; }
 .secure-note { display: flex; align-items: flex-start; gap: 8px; margin-top: 18px; padding: 10px; border: 1px solid rgba(217,119,87,.35); border-radius: 7px; color: var(--muted); font-size: 11px; line-height: 1.45; }
 .secure-note svg { flex: 0 0 auto; color: #d97757; }
 @media (max-width: 760px) { .sidebar { position: fixed; z-index: 5; height: 100vh; transform: translateX(0); box-shadow: 12px 0 30px rgba(0,0,0,.2); } .sidebar-collapsed .sidebar { transform: translateX(-100%); } .menu-button { display: inline-flex; } .mobile-title { display: block; margin-right: auto; margin-left: 8px; font-family: Georgia, serif; font-size: 18px; } .topbar { padding: 0 14px; } .credit-pill { display: none; } .chat-view { padding: 12vh 15px 18px; } .composer-hint, .model-selector span:not(.provider-mark) { display: none; } .welcome h1 { font-size: 28px; } .content-panel, .notebook-panel { width: calc(100% - 30px); margin-top: 3vh; } .panel-title { align-items: flex-start; flex-direction: column; } .panel-title h1 { font-size: 30px; } .panel-actions { width: 100%; } .panel-actions button { flex: 1; } .study-tools { flex-wrap: wrap; } }

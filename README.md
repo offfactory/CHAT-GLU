@@ -23,9 +23,12 @@ The interface includes:
 - Local arithmetic reasoning for common expressions, with a safe expression whitelist
 - Profile usernames and uploaded avatar pictures persisted in the browser
 - Roblox Studio creator workspace with MCP setup guidance
+- Official Roblox Studio MCP setup panel with Windows `mcp.json`, copy, and download actions
 - Secure `.env.example` placeholders with no real tokens
 - Responsive sidebar inspired by modern AI workspaces
 
 Puter.js is loaded from its official browser SDK and used as a client-side provider when available. GitHub Pages cannot safely host Discord OAuth secrets, Roblox tokens, or arbitrary server commands. Roblox Studio connectivity should use the local Studio MCP bridge or a secure backend endpoint. Methusos 5's command mode is intentionally browser-safe; it does not execute untrusted shell commands on a visitor's machine.
+
+The Roblox Studio MCP server uses local stdio transport. Enable it in Studio under **Assistant → Manage MCP Servers**, then add the Windows `Roblox_Studio` entry shown in Chat Glu to your MCP client's configuration and restart that client. A static GitHub Pages website cannot launch local stdio processes directly.
 
 If a token was accidentally pasted into chat, revoke and rotate it immediately. This project never includes user-provided secrets.
