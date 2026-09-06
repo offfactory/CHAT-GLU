@@ -52,7 +52,9 @@ const state = {
   activePanel: 'chat',
   sidebarOpen: true,
   sound: localStorage.getItem('chat-glu-sound') !== 'off'
-  ,puterSignedIn: false
+  ,puterSignedIn: false,
+  authenticated: localStorage.getItem('chat-glu-authenticated') === 'true',
+  authMode: 'signin'
 };
 
 const app = document.querySelector('#app');
@@ -90,6 +92,11 @@ function providerMark(model) {
 }
 
 function render() {
+  if (!state.authenticated) {
+    app.innerHTML = renderAuth();
+    bindAuthEvents();
+    return;
+  }
   const chat = activeChat();
   const model = currentModel();
   document.documentElement.dataset.theme = state.theme;
@@ -130,6 +137,33 @@ function render() {
   bindEvents();
 }
 
+function renderAuth() {
+  const signUp = state.authMode === 'signup';
+  return `<main class="auth-shell"><section class="auth-card"><div class="auth-brand"><span class="brand-star">G</span><span>Chat Glu</span></div><span class="eyebrow">Your creative AI workspace</span><h1>${signUp ? 'Create your free account' : 'Welcome back'}</h1><p class="auth-subtitle">Chat, code, study, and create with Methusos 5.1 in one calm workspace.</p><button class="auth-provider discord-button" data-auth="discord">${icons.discord} Continue with Discord</button><button class="auth-provider roblox-button" data-auth="roblox">${icons.roblox} Continue with Roblox</button><div class="auth-divider"><span>or use a free Chat Glu account</span></div><form id="auth-form"><label>Display name<input id="auth-name" required placeholder="Your name" /></label><label>Email<input id="auth-email" type="email" required placeholder="you@example.com" /></label><label>Password<input id="auth-password" type="password" minlength="8" required placeholder="At least 8 characters" /></label><button class="button-primary auth-submit" type="submit">${signUp ? 'Create account' : 'Sign in'}</button></form><p class="auth-legal">Your local demo profile stays in this browser. Secure Discord and Roblox OAuth requires a backend callback; Chat Glu never asks for API keys here.</p><button class="auth-switch" data-auth-mode="${signUp ? 'signin' : 'signup'}">${signUp ? 'Already have an account? Sign in' : 'New here? Create a free account'}</button></section><aside class="auth-art"><div class="art-orb"></div><div class="art-card art-card-one">Build Roblox worlds<br /><small>Methusos 5.1 · Lua ready</small></div><div class="art-card art-card-two">Generate ideas<br /><small>Images · code · study</small></div><div class="art-card art-card-three">900 starter credits</div></aside></main>`;
+}
+
+function bindAuthEvents() {
+  app.querySelector('[data-auth-mode]')?.addEventListener('click', () => { state.authMode = app.querySelector('[data-auth-mode]').dataset.authMode; render(); });
+  app.querySelector('[data-auth="discord"]')?.addEventListener('click', () => {
+    if (window.puter?.auth?.signIn) loginWithDiscord();
+    else window.open('https://discord.com/oauth2/authorize', '_blank', 'noopener,noreferrer');
+  });
+  app.querySelector('[data-auth="roblox"]')?.addEventListener('click', () => {
+    window.open('https://create.roblox.com/dashboard/credentials', '_blank', 'noopener,noreferrer');
+    alert('Roblox authorization needs a configured server-side OAuth callback. The public site never accepts Roblox API keys.');
+  });
+  app.querySelector('#auth-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const name = app.querySelector('#auth-name').value.trim();
+    const email = app.querySelector('#auth-email').value.trim();
+    state.profile = { ...state.profile, name, email, avatar: name.slice(0, 1).toUpperCase() || 'M' };
+    state.authenticated = true;
+    localStorage.setItem('chat-glu-authenticated', 'true');
+    save();
+    render();
+  });
+}
+
 function renderPanel(chat, model) {
   if (state.activePanel === 'images') return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Creative studio</span><h1>Images</h1><p>Generate visual concepts with Methusos 5 through Puter.</p></div><button class="button-primary" data-action="image-prompt">${icons.image} Create image</button></div><div class="empty-grid"><div class="empty-card"><div class="empty-icon">${icons.image}</div><strong>Image generation</strong><span>Ask Methusos 5 to create a visual and save it here.</span><button class="text-button" data-action="image-prompt">Start creating</button></div></div></section>`;
   if (state.activePanel === 'files') return `<section class="content-panel"><div class="panel-title"><div><span class="eyebrow">Your workspace</span><h1>Library</h1><p>Files you upload become context for your chats and notebooks.</p></div><button class="button-primary" data-action="upload">${icons.plus} Upload files</button></div><div class="file-grid">${state.files.length ? state.files.map((file) => `<div class="file-card">${icons.file}<strong>${escapeHtml(file.name)}</strong><small>${file.size}</small></div>`).join('') : '<div class="empty-card"><div class="empty-icon">' + icons.file + '</div><strong>Your library is empty</strong><span>Upload notes, images, or documents to use them in chat.</span><button class="text-button" data-action="upload">Upload a file</button></div>'}</div></section>`;
@@ -139,7 +173,7 @@ function renderPanel(chat, model) {
     const notebook = state.notebooks.find((item) => item.id === state.activeNotebookId) || state.notebooks[0];
     return `<section class="notebook-panel"><div class="panel-title"><div><span class="eyebrow">Study workspace</span><h1>${escapeHtml(notebook.title)}</h1><p>Write, edit, and ask Methusos 5 to turn notes into study material.</p></div><div class="panel-actions"><button class="button-secondary" data-action="study-guide">Generate study guide</button><button class="button-primary" data-action="image-prompt">${icons.image} Generate image</button></div></div><textarea class="notebook-editor" data-notebook-editor="${notebook.id}">${escapeHtml(notebook.body)}</textarea><div class="study-tools"><button data-action="flashcards">Make flashcards</button><button data-action="quiz">Make a quiz</button><button data-action="summarize">Summarize notes</button></div></section>`;
   }
-  return `<section class="chat-view ${chat.messages.length ? 'has-messages' : ''}">${chat.messages.length ? `<div class="message-stack">${chat.messages.map((message) => { const text = messageText(message.text); return `<article class="message ${message.role}"><div class="message-avatar">${message.role === 'user' ? (state.profile.photo ? `<img src="${state.profile.photo}" alt="" />` : escapeHtml(state.profile.avatar)) : providerMark(model)}</div><div class="message-body"><div class="message-label">${message.role === 'user' ? 'You' : model.name}</div>${message.image ? `<div class="generated-image"><div class="image-spark">M5</div><span>${escapeHtml(text)}</span></div>` : renderMessageContent(text)}<button class="speak-button" data-speak="${escapeHtml(text)}">${icons.volume} Read aloud</button></div></article>`; }).join('')}</div>` : `<div class="welcome"><div class="welcome-mark">M5</div><h1>What can I help you explore?</h1><p>Methusos 5.1 can reason, calculate, code, and create.</p></div>`}<div class="composer-wrap"><form class="composer" id="composer">${state.files.length ? `<div class="attachment-strip">${state.files.slice(-3).map((file) => `<span>${icons.file}${escapeHtml(file.name)}</span>`).join('')}</div>` : ''}<textarea id="prompt" rows="1" placeholder="${state.mode === 'Image' ? 'Describe an image to create...' : state.mode === 'Code' ? 'Describe code you want to build...' : 'Ask Methusos 5.1 anything...'}" aria-label="Message Chat Glu"></textarea><div class="composer-toolbar"><div class="toolbar-left"><button type="button" class="icon-button add-button" data-action="upload" aria-label="Add attachment">${icons.plus}</button><button type="button" class="mode-button" data-action="mode-menu">${state.mode} ${icons.chevron}</button><span class="composer-hint">Methusos 5.1 · Puter optional</span></div><div class="toolbar-right"><button type="button" class="model-selector" data-action="model-menu">${providerMark(model)}<span>${model.name}</span>${icons.chevron}</button><button class="send-button" type="submit" aria-label="Send message">${icons.send}</button></div></div></form><div class="model-menu hidden">${models.map((item) => `<button class="model-option ${item.id === model.id ? 'selected' : ''}" data-model="${item.id}">${providerMark(item)}<span><strong>${item.name}</strong><small>${item.provider} · ${item.detail}</small></span>${item.id === model.id ? '<span class="check">✓</span>' : ''}</button>`).join('')}</div><div class="mode-menu hidden">${model.modes.map((mode) => `<button data-mode="${mode}" class="${mode === state.mode ? 'selected' : ''}">${mode}</button>`).join('')}</div><p class="privacy-note">Puter powers live AI when connected. Methusos 5.1 also works in local demo mode.</p></div></section>`;
+  return `<section class="chat-view ${chat.messages.length ? 'has-messages' : ''}">${chat.messages.length ? `<div class="message-stack">${chat.messages.map((message, index) => { const text = messageText(message.text); const media = typeof message.media === 'string' ? message.media : message.media?.url || message.media?.src; return `<article class="message ${message.role}"><div class="message-avatar">${message.role === 'user' ? (state.profile.photo ? `<img src="${state.profile.photo}" alt="" />` : escapeHtml(state.profile.avatar)) : providerMark(model)}</div><div class="message-body"><div class="message-label">${message.role === 'user' ? 'You' : model.name}</div>${message.image ? `<div class="generated-image">${media ? `<img src="${escapeHtml(media)}" alt="${escapeHtml(text)}" />` : '<div class="image-spark">M5</div>'}<span>${escapeHtml(text)}</span>${media ? `<a class="download-image" href="${escapeHtml(media)}" download="chat-glu-image.png" target="_blank" rel="noreferrer">Download image</a>` : ''}</div>` : renderMessageContent(text)}<button class="speak-button" data-speak="${escapeHtml(text)}">${icons.volume} Read aloud</button></div></article>`; }).join('')}</div>` : `<div class="welcome"><div class="welcome-mark">M5</div><h1>What can I help you explore?</h1><p>Methusos 5.1 can reason, calculate, code, and create.</p></div>`}<div class="composer-wrap"><form class="composer" id="composer">${state.files.length ? `<div class="attachment-strip">${state.files.slice(-3).map((file) => `<span>${icons.file}${escapeHtml(file.name)}</span>`).join('')}</div>` : ''}<textarea id="prompt" rows="1" placeholder="${state.mode === 'Image' ? 'Describe an image to create...' : state.mode === 'Code' ? 'Describe code you want to build...' : 'Ask Methusos 5.1 anything...'}" aria-label="Message Chat Glu"></textarea><div class="composer-toolbar"><div class="toolbar-left"><button type="button" class="icon-button add-button" data-action="upload" aria-label="Add attachment">${icons.plus}</button><button type="button" class="mode-button" data-action="mode-menu">${state.mode} ${icons.chevron}</button><span class="composer-hint">Methusos 5.1 · Puter optional</span></div><div class="toolbar-right"><button type="button" class="model-selector" data-action="model-menu">${providerMark(model)}<span>${model.name}</span>${icons.chevron}</button><button class="send-button" type="submit" aria-label="Send message">${icons.send}</button></div></div></form><div class="model-menu hidden">${models.map((item) => `<button class="model-option ${item.id === model.id ? 'selected' : ''}" data-model="${item.id}">${providerMark(item)}<span><strong>${item.name}</strong><small>${item.provider} · ${item.detail}</small></span>${item.id === model.id ? '<span class="check">✓</span>' : ''}</button>`).join('')}</div><div class="mode-menu hidden">${model.modes.map((mode) => `<button data-mode="${mode}" class="${mode === state.mode ? 'selected' : ''}">${mode}</button>`).join('')}</div><p class="privacy-note">Puter powers live AI when connected. Methusos 5.1 also works in local demo mode.</p></div></section>`;
 }
 
 function renderSettingsModal() {
@@ -243,7 +277,7 @@ function sendMessage(event) {
   setTimeout(async () => {
     const current = activeChat();
     const response = (await awaitPuter(text, isImage)) || solveLocally(text, state.mode, isImage);
-    current.messages.push({ role: 'assistant', text: response.text, image: response.image });
+    current.messages.push({ role: 'assistant', text: response.text, image: response.image, media: response.media });
     save();
     render();
   }, 450);
