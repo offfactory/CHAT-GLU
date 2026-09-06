@@ -1,7 +1,7 @@
 import './styles.css';
 
 const models = [
-  { id: 'methusos', name: 'Methusos 5', provider: 'Chat Glu', detail: 'Native Chat Glu model', color: '#d97757', modes: ['Chat', 'Code', 'Image', 'Study'], puterModel: 'gpt-4o-mini' },
+  { id: 'methusos', name: 'Methusos 5.1', provider: 'Chat Glu', detail: 'Custom reasoning and coding model', color: '#39ff88', modes: ['Chat', 'Code', 'Image', 'Study'], puterModel: 'gpt-4o-mini' },
   { id: 'deepseek', name: 'DeepSeek Chat', provider: 'DeepSeek', detail: 'Reasoning and coding', color: '#7ca8ff', modes: ['Chat', 'Code'], puterModel: 'deepseek-chat' },
   { id: 'claude', name: 'Claude Sonnet', provider: 'Anthropic', detail: 'Writing and analysis', color: '#e0a27d', modes: ['Chat', 'Code'], puterModel: 'claude-3-5-sonnet' },
   { id: 'gemini', name: 'Gemini Flash', provider: 'Google', detail: 'Fast multimodal model', color: '#91a9ff', modes: ['Chat', 'Image'], puterModel: 'gemini-2.0-flash' },
@@ -134,16 +134,16 @@ function renderPanel(chat, model) {
   if (state.activePanel === 'images') return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Creative studio</span><h1>Images</h1><p>Generate visual concepts with Methusos 5 through Puter.</p></div><button class="button-primary" data-action="image-prompt">${icons.image} Create image</button></div><div class="empty-grid"><div class="empty-card"><div class="empty-icon">${icons.image}</div><strong>Image generation</strong><span>Ask Methusos 5 to create a visual and save it here.</span><button class="text-button" data-action="image-prompt">Start creating</button></div></div></section>`;
   if (state.activePanel === 'files') return `<section class="content-panel"><div class="panel-title"><div><span class="eyebrow">Your workspace</span><h1>Library</h1><p>Files you upload become context for your chats and notebooks.</p></div><button class="button-primary" data-action="upload">${icons.plus} Upload files</button></div><div class="file-grid">${state.files.length ? state.files.map((file) => `<div class="file-card">${icons.file}<strong>${escapeHtml(file.name)}</strong><small>${file.size}</small></div>`).join('') : '<div class="empty-card"><div class="empty-icon">' + icons.file + '</div><strong>Your library is empty</strong><span>Upload notes, images, or documents to use them in chat.</span><button class="text-button" data-action="upload">Upload a file</button></div>'}</div></section>`;
   if (state.activePanel === 'coder') return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Methusos 5 workspace</span><h1>Coder</h1><p>Build with chat, files, code plans, and safe browser previews.</p></div><button class="button-primary" data-action="coder-chat">${icons.code} Start coding</button></div><div class="coder-grid"><div class="empty-card"><div class="empty-icon">${icons.code}</div><strong>Chat with your code</strong><span>Upload a project file, ask for a fix, or generate a starter component.</span><button class="text-button" data-action="coder-chat">Open code mode</button></div><div class="empty-card"><div class="empty-icon">${icons.file}</div><strong>Safe command notes</strong><span>Methusos 5 can explain commands and generate scripts. It does not run unknown shell commands in your browser.</span></div></div></section>`;
-  if (state.activePanel === 'roblox') return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Creator connection</span><h1>Roblox Studio</h1><p>Connect Methusos 5 to your Roblox workflow through the Studio MCP bridge.</p></div><button class="button-primary" data-action="roblox-connect">${icons.roblox} Connect Roblox</button></div><div class="coder-grid"><div class="empty-card"><div class="empty-icon">${icons.roblox}</div><strong>Studio bridge</strong><span>Use the Roblox Studio MCP plugin locally so the assistant can inspect and build inside the place you choose.</span><button class="text-button" data-action="roblox-connect">Open secure setup</button></div><div class="empty-card"><div class="empty-icon">${icons.settings}</div><strong>Secure configuration</strong><span>Chat Glu never receives or stores Roblox credentials in this public website. Create or rotate credentials in Roblox, then configure the local Studio bridge.</span><a class="text-button" href="https://create.roblox.com/dashboard/credentials" target="_blank" rel="noreferrer">Open Roblox access page</a></div></div></section>`;
+  if (state.activePanel === 'roblox') return `<section class="content-panel glow-panel"><div class="panel-title"><div><span class="eyebrow">Creator connection</span><h1>Roblox Studio</h1><p>Connect Methusos 5.1 to Studio through a local MCP bridge.</p></div><button class="button-primary" data-action="roblox-connect">${icons.roblox} Configure Roblox</button></div><div class="coder-grid"><div class="empty-card"><div class="empty-icon">${icons.roblox}</div><strong>Studio bridge</strong><span>Set your local bridge URL in Settings, then test the connection. The browser sends requests only to the endpoint you choose.</span><button class="text-button" data-action="roblox-connect">Configure bridge</button><button class="text-button" data-action="roblox-test">Test connection</button></div><div class="empty-card"><div class="empty-icon">${icons.settings}</div><strong>Secure configuration</strong><span>Chat Glu never receives or stores Roblox credentials. Create or rotate credentials in Roblox, configure the local Studio MCP bridge, and keep its secret outside this website.</span><a class="text-button" href="https://create.roblox.com/dashboard/credentials" target="_blank" rel="noreferrer">Open Roblox access page</a></div></div></section>`;
   if (state.activePanel === 'notebook') {
     const notebook = state.notebooks.find((item) => item.id === state.activeNotebookId) || state.notebooks[0];
     return `<section class="notebook-panel"><div class="panel-title"><div><span class="eyebrow">Study workspace</span><h1>${escapeHtml(notebook.title)}</h1><p>Write, edit, and ask Methusos 5 to turn notes into study material.</p></div><div class="panel-actions"><button class="button-secondary" data-action="study-guide">Generate study guide</button><button class="button-primary" data-action="image-prompt">${icons.image} Generate image</button></div></div><textarea class="notebook-editor" data-notebook-editor="${notebook.id}">${escapeHtml(notebook.body)}</textarea><div class="study-tools"><button data-action="flashcards">Make flashcards</button><button data-action="quiz">Make a quiz</button><button data-action="summarize">Summarize notes</button></div></section>`;
   }
-  return `<section class="chat-view ${chat.messages.length ? 'has-messages' : ''}">${chat.messages.length ? `<div class="message-stack">${chat.messages.map((message) => { const text = messageText(message.text); return `<article class="message ${message.role}"><div class="message-avatar">${message.role === 'user' ? (state.profile.photo ? `<img src="${state.profile.photo}" alt="" />` : escapeHtml(state.profile.avatar)) : providerMark(model)}</div><div class="message-body"><div class="message-label">${message.role === 'user' ? 'You' : model.name}</div>${message.image ? `<div class="generated-image"><div class="image-spark">M5</div><span>${escapeHtml(text)}</span></div>` : `<p>${escapeHtml(text)}</p>`}<button class="speak-button" data-speak="${escapeHtml(text)}">${icons.volume} Read aloud</button></div></article>`; }).join('')}</div>` : `<div class="welcome"><div class="welcome-mark">M5</div><h1>What can I help you explore?</h1><p>Methusos 5 can reason, calculate, code, and create.</p></div>`}<div class="composer-wrap"><form class="composer" id="composer">${state.files.length ? `<div class="attachment-strip">${state.files.slice(-3).map((file) => `<span>${icons.file}${escapeHtml(file.name)}</span>`).join('')}</div>` : ''}<textarea id="prompt" rows="1" placeholder="${state.mode === 'Image' ? 'Describe an image to create...' : state.mode === 'Code' ? 'Describe code you want to build...' : 'Ask Methusos 5 anything...'}" aria-label="Message Chat Glu"></textarea><div class="composer-toolbar"><div class="toolbar-left"><button type="button" class="icon-button add-button" data-action="upload" aria-label="Add attachment">${icons.plus}</button><button type="button" class="mode-button" data-action="mode-menu">${state.mode} ${icons.chevron}</button><span class="composer-hint">Methusos 5 · Puter optional</span></div><div class="toolbar-right"><button type="button" class="model-selector" data-action="model-menu">${providerMark(model)}<span>${model.name}</span>${icons.chevron}</button><button class="send-button" type="submit" aria-label="Send message">${icons.send}</button></div></div></form><div class="model-menu hidden">${models.map((item) => `<button class="model-option ${item.id === model.id ? 'selected' : ''}" data-model="${item.id}">${providerMark(item)}<span><strong>${item.name}</strong><small>${item.provider} · ${item.detail}</small></span>${item.id === model.id ? '<span class="check">✓</span>' : ''}</button>`).join('')}</div><div class="mode-menu hidden">${model.modes.map((mode) => `<button data-mode="${mode}" class="${mode === state.mode ? 'selected' : ''}">${mode}</button>`).join('')}</div><p class="privacy-note">Puter powers live AI when connected. Methusos 5 also works in local demo mode.</p></div></section>`;
+  return `<section class="chat-view ${chat.messages.length ? 'has-messages' : ''}">${chat.messages.length ? `<div class="message-stack">${chat.messages.map((message) => { const text = messageText(message.text); return `<article class="message ${message.role}"><div class="message-avatar">${message.role === 'user' ? (state.profile.photo ? `<img src="${state.profile.photo}" alt="" />` : escapeHtml(state.profile.avatar)) : providerMark(model)}</div><div class="message-body"><div class="message-label">${message.role === 'user' ? 'You' : model.name}</div>${message.image ? `<div class="generated-image"><div class="image-spark">M5</div><span>${escapeHtml(text)}</span></div>` : renderMessageContent(text)}<button class="speak-button" data-speak="${escapeHtml(text)}">${icons.volume} Read aloud</button></div></article>`; }).join('')}</div>` : `<div class="welcome"><div class="welcome-mark">M5</div><h1>What can I help you explore?</h1><p>Methusos 5.1 can reason, calculate, code, and create.</p></div>`}<div class="composer-wrap"><form class="composer" id="composer">${state.files.length ? `<div class="attachment-strip">${state.files.slice(-3).map((file) => `<span>${icons.file}${escapeHtml(file.name)}</span>`).join('')}</div>` : ''}<textarea id="prompt" rows="1" placeholder="${state.mode === 'Image' ? 'Describe an image to create...' : state.mode === 'Code' ? 'Describe code you want to build...' : 'Ask Methusos 5.1 anything...'}" aria-label="Message Chat Glu"></textarea><div class="composer-toolbar"><div class="toolbar-left"><button type="button" class="icon-button add-button" data-action="upload" aria-label="Add attachment">${icons.plus}</button><button type="button" class="mode-button" data-action="mode-menu">${state.mode} ${icons.chevron}</button><span class="composer-hint">Methusos 5.1 · Puter optional</span></div><div class="toolbar-right"><button type="button" class="model-selector" data-action="model-menu">${providerMark(model)}<span>${model.name}</span>${icons.chevron}</button><button class="send-button" type="submit" aria-label="Send message">${icons.send}</button></div></div></form><div class="model-menu hidden">${models.map((item) => `<button class="model-option ${item.id === model.id ? 'selected' : ''}" data-model="${item.id}">${providerMark(item)}<span><strong>${item.name}</strong><small>${item.provider} · ${item.detail}</small></span>${item.id === model.id ? '<span class="check">✓</span>' : ''}</button>`).join('')}</div><div class="mode-menu hidden">${model.modes.map((mode) => `<button data-mode="${mode}" class="${mode === state.mode ? 'selected' : ''}">${mode}</button>`).join('')}</div><p class="privacy-note">Puter powers live AI when connected. Methusos 5.1 also works in local demo mode.</p></div></section>`;
 }
 
 function renderSettingsModal() {
-  return `<div class="modal-layer hidden" id="settings-modal"><div class="modal wide-modal"><div class="modal-head"><div><span class="eyebrow">Workspace controls</span><h2>Settings</h2></div><button class="icon-button" data-action="close-settings">×</button></div><div class="settings-tabs"><button class="selected">Models</button><button>Appearance</button><button>Sound</button></div><p class="modal-copy">Methusos 5 uses Puter when available. Provider keys below stay in this browser and should never be committed.</p><label>Google Gemini API key<input type="password" id="gemini-key" placeholder="AIza..." /></label><label>OpenAI API key<input type="password" id="openai-key" placeholder="sk-..." /></label><label>OpenRouter / DeepSeek API key<input type="password" id="openrouter-key" placeholder="sk-or-..." /></label><div class="secure-note">${icons.roblox}<span>Roblox Studio: configure MCP locally or through a server secret. Do not put Roblox tokens in this page.</span></div><div class="settings-row"><div><strong>Tap sounds</strong><small>Play a soft sound when controls are clicked.</small></div><button class="toggle ${state.sound ? 'on' : ''}" data-action="toggle-sound"><span></span></button></div><div class="settings-row"><div><strong>Speech controls</strong><small>Read Methusos 5 answers aloud with your browser voice.</small></div><button class="button-secondary" data-action="test-speech">Test voice</button></div><div class="modal-footer"><span class="saved-message" id="saved-message"></span><button class="button-primary" data-action="save-settings">Save settings</button></div></div></div>`;
+  return `<div class="modal-layer hidden" id="settings-modal"><div class="modal wide-modal"><div class="modal-head"><div><span class="eyebrow">Workspace controls</span><h2>Settings</h2></div><button class="icon-button" data-action="close-settings">×</button></div><div class="settings-tabs"><button class="selected">Models</button><button>Appearance</button><button>Sound</button></div><p class="modal-copy">Methusos 5.1 uses Puter when available. Provider keys below stay in this browser and should never be committed.</p><label>Google Gemini API key<input type="password" id="gemini-key" placeholder="AIza..." /></label><label>OpenAI API key<input type="password" id="openai-key" placeholder="sk-..." /></label><label>OpenRouter / DeepSeek API key<input type="password" id="openrouter-key" placeholder="sk-or-..." /></label><label>Local Roblox MCP bridge URL<input type="url" id="roblox-endpoint" placeholder="http://127.0.0.1:39200" /></label><div class="secure-note">${icons.roblox}<span>Roblox credentials are never accepted here. Use the local Studio bridge and keep its secret in Roblox Studio or a secure backend.</span></div><div class="settings-row"><div><strong>Tap sounds</strong><small>Play a soft sound when controls are clicked.</small></div><button class="toggle ${state.sound ? 'on' : ''}" data-action="toggle-sound"><span></span></button></div><div class="settings-row"><div><strong>Speech controls</strong><small>Read Methusos 5.1 answers aloud with your browser voice.</small></div><button class="button-secondary" data-action="test-speech">Test voice</button></div><div class="modal-footer"><span class="saved-message" id="saved-message"></span><button class="button-primary" data-action="save-settings">Save settings</button></div></div></div>`;
 }
 
 function renderProfileModal() {
@@ -158,6 +158,7 @@ function bindEvents() {
     window.open('https://create.roblox.com/dashboard/credentials', '_blank', 'noopener,noreferrer');
     openSettings();
   }));
+  app.querySelector('[data-action="roblox-test"]')?.addEventListener('click', testRobloxBridge);
   app.querySelectorAll('[data-chat]').forEach((button) => button.addEventListener('click', () => { state.activeChatId = button.dataset.chat; state.activePanel = 'chat'; save(); render(); }));
   app.querySelectorAll('[data-delete-chat]').forEach((button) => button.addEventListener('click', (event) => { event.stopPropagation(); deleteChat(button.dataset.deleteChat); }));
   app.querySelectorAll('[data-notebook]').forEach((button) => button.addEventListener('click', () => { state.activeNotebookId = button.dataset.notebook; state.activePanel = 'notebook'; render(); }));
@@ -187,6 +188,12 @@ function bindEvents() {
   app.querySelectorAll('[data-model]').forEach((button) => button.addEventListener('click', () => { state.modelId = button.dataset.model; state.mode = currentModel().modes[0]; save(); render(); }));
   app.querySelectorAll('[data-mode]').forEach((button) => button.addEventListener('click', () => { state.mode = button.dataset.mode; save(); render(); }));
   app.querySelectorAll('[data-speak]').forEach((button) => button.addEventListener('click', () => speak(button.dataset.speak)));
+  app.querySelectorAll('[data-copy-code]').forEach((button) => button.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(decodeURIComponent(button.dataset.copyCode));
+    button.textContent = 'Copied';
+    setTimeout(() => { button.textContent = 'Copy'; }, 1200);
+  }));
+  app.querySelectorAll('[data-download-code]').forEach((button) => button.addEventListener('click', () => downloadCode(decodeURIComponent(button.dataset.downloadCode), button.dataset.filename || 'methusos-script.lua')));
   app.querySelector('#composer')?.addEventListener('submit', sendMessage);
   app.querySelector('#prompt')?.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); app.querySelector('#composer').requestSubmit(); } });
   app.querySelectorAll('[data-action="image-prompt"]').forEach((button) => button.addEventListener('click', () => { state.activePanel = 'chat'; state.mode = 'Image'; save(); render(); document.querySelector('#prompt')?.focus(); }));
@@ -279,7 +286,7 @@ function solveLocally(prompt, mode, image) {
       if (Number.isFinite(answer)) return { text: `Methusos 5 calculation\n\n${expression} = ${answer}`, image: false };
     } catch {}
   }
-  if (mode === 'Code') return { text: `Methusos 5 code mode\n\nPlan:\n1. Define the inputs and expected output.\n2. Choose the smallest safe implementation.\n3. Add validation and tests.\n\nConnect Puter for a live generated implementation.`, image: false };
+  if (mode === 'Code') return { text: `Methusos 5.1 code mode\n\nPlan:\n1. Define the inputs and expected output.\n2. Choose the smallest safe implementation.\n3. Add validation and tests.\n\nStarter Roblox Lua script:\n\n\`\`\`lua\nlocal Players = game:GetService("Players")\nlocal player = Players.LocalPlayer\n\nlocal function describeCharacter(character)\n    local humanoid = character:WaitForChild("Humanoid")\n    print(("Ready: %s (WalkSpeed %d)"):format(player.Name, humanoid.WalkSpeed))\nend\n\nif player.Character then\n    describeCharacter(player.Character)\nend\nplayer.CharacterAdded:Connect(describeCharacter)\n\`\`\`\n\nConnect Puter for a live generated implementation.`, image: false };
   if (mode === 'Study') return { text: `Methusos 5 study mode\n\nTopic: ${prompt}\n\nStart with a plain-language explanation, list the key terms, create three recall questions, then explain the idea without notes.`, image: false };
   return { text: `Methusos 5 is ready for “${prompt}”. Puter can provide a live answer when connected; local mode still handles arithmetic, profiles, files, notebooks, and speech.`, image: false };
 }
@@ -298,11 +305,63 @@ async function loginWithDiscord() {
 function openSettings() {
   document.querySelector('#settings-modal').classList.remove('hidden');
   ['openai', 'gemini', 'openrouter'].forEach((key) => { const input = document.querySelector(`#${key}-key`); if (input) input.value = localStorage.getItem(`chat-glu-key-${key}`) || ''; });
+  const endpoint = document.querySelector('#roblox-endpoint');
+  if (endpoint) endpoint.value = localStorage.getItem('chat-glu-roblox-endpoint') || '';
+}
+async function testRobloxBridge() {
+  const endpoint = localStorage.getItem('chat-glu-roblox-endpoint')?.replace(/\/+$/, '');
+  if (!endpoint) {
+    openSettings();
+    alert('Add your local Roblox MCP bridge URL in Settings first.');
+    return;
+  }
+  try {
+    const response = await fetch(`${endpoint}/health`, { method: 'GET', signal: AbortSignal.timeout(5000) });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    alert('Roblox Studio bridge is reachable.');
+  } catch (error) {
+    alert(`Roblox bridge connection failed: ${error.message}`);
+  }
 }
 function closeModals() { document.querySelectorAll('.modal-layer').forEach((modal) => modal.classList.add('hidden')); }
-function saveSettings() { ['openai', 'gemini', 'openrouter'].forEach((key) => localStorage.setItem(`chat-glu-key-${key}`, document.querySelector(`#${key}-key`).value.trim())); const message = document.querySelector('#saved-message'); if (message) message.textContent = 'Saved locally'; setTimeout(closeModals, 700); }
+function saveSettings() {
+  ['openai', 'gemini', 'openrouter'].forEach((key) => localStorage.setItem(`chat-glu-key-${key}`, document.querySelector(`#${key}-key`).value.trim()));
+  localStorage.setItem('chat-glu-roblox-endpoint', document.querySelector('#roblox-endpoint').value.trim());
+  const message = document.querySelector('#saved-message');
+  if (message) message.textContent = 'Saved locally';
+  setTimeout(closeModals, 700);
+}
 function saveProfile() { state.profile.name = document.querySelector('#profile-name').value.trim() || 'My account'; state.profile.avatar = document.querySelector('#profile-avatar').value.trim() || 'M'; save(); render(); }
 function escapeHtml(value) { return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]); }
+function renderMessageContent(value) {
+  const text = messageText(value);
+  const parts = [];
+  let cursor = 0;
+  const pattern = /```([a-zA-Z0-9#+._-]*)\r?\n([\s\S]*?)```/g;
+  let match;
+  while ((match = pattern.exec(text))) {
+    const prose = text.slice(cursor, match.index).trim();
+    if (prose) parts.push(`<p>${escapeHtml(prose).replace(/\r?\n/g, '<br>')}</p>`);
+    const language = match[1] || 'text';
+    const code = match[2].replace(/\r?\n$/, '');
+    const encoded = encodeURIComponent(code);
+    const filename = language.toLowerCase() === 'lua' ? 'methusos-script.lua' : `methusos-code.${language.toLowerCase() === 'javascript' ? 'js' : language.toLowerCase()}`;
+    parts.push(`<div class="code-card"><div class="code-toolbar"><span>${escapeHtml(language)}</span><div><button data-copy-code="${encoded}">Copy</button><button data-download-code="${encoded}" data-filename="${filename}">Download</button></div></div><pre><code>${escapeHtml(code)}</code></pre></div>`);
+    cursor = match.index + match[0].length;
+  }
+  const remainder = text.slice(cursor).trim();
+  if (remainder) parts.push(`<p>${escapeHtml(remainder).replace(/\r?\n/g, '<br>')}</p>`);
+  return parts.join('') || '<p></p>';
+}
+function downloadCode(code, filename) {
+  const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 function messageText(value) {
   if (typeof value === 'string') return value;
   if (value && typeof value === 'object') return value.text || value.content || 'Methusos 5 returned a response.';
