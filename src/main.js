@@ -45,7 +45,7 @@ const state = {
   activeChatId: localStorage.getItem('chat-glu-active') || 'welcome',
   modelId: localStorage.getItem('chat-glu-model') || 'methusos',
   mode: localStorage.getItem('chat-glu-mode') || 'Chat',
-  theme: localStorage.getItem('chat-glu-theme') || 'dark',
+  theme: 'dark',
   credits: Number(localStorage.getItem('chat-glu-credits') || 900),
   profile: saved('chat-glu-profile', { name: 'My account', email: 'Local profile', avatar: 'M', photo: '' }),
   files: saved('chat-glu-files', []),
@@ -122,7 +122,7 @@ function render() {
         </div>
         <div class="sidebar-bottom">
           <button class="profile-row" data-action="profile"><span class="avatar">${state.profile.photo ? `<img src="${state.profile.photo}" alt="" />` : escapeHtml(state.profile.avatar)}</span><span><strong>${escapeHtml(state.profile.name)}</strong><small>Local profile</small></span><span class="more">•••</span></button>
-          <button class="theme-row" data-action="theme">${state.theme === 'dark' ? icons.sun : icons.moon}<span>Switch to ${state.theme === 'dark' ? 'light' : state.theme === 'light' ? 'green neon' : 'dark'} mode</span></button>
+          <div class="theme-row static-theme">${icons.moon}<span>Dark workspace</span></div>
         </div>
       </aside>
       <main class="main">
@@ -202,11 +202,6 @@ function bindEvents() {
   app.querySelectorAll('[data-action="new-chat"]').forEach((button) => button.addEventListener('click', createChat));
   app.querySelector('[data-action="new-notebook"]')?.addEventListener('click', createNotebook);
   app.querySelector('[data-action="toggle-sidebar"]')?.addEventListener('click', () => { state.sidebarOpen = !state.sidebarOpen; render(); });
-  app.querySelector('[data-action="theme"]')?.addEventListener('click', () => {
-    state.theme = state.theme === 'dark' ? 'light' : state.theme === 'light' ? 'green' : 'dark';
-    save();
-    render();
-  });
   app.querySelectorAll('[data-action="settings"]').forEach((button) => button.addEventListener('click', openSettings));
   app.querySelector('[data-action="close-settings"]')?.addEventListener('click', closeModals);
   app.querySelector('[data-action="close-profile"]')?.addEventListener('click', closeModals);
